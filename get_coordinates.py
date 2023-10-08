@@ -7,7 +7,8 @@ import requests
 def fetch_credentials():
     api_key = getenv("API_KEY")
     if not api_key:
-        error("Failed to fetch API key from the environment.")
+        error("Failed to fetch API key from the environment. Please refer to "
+              "README.md for instructions on setting up the environment.")
         return exit(1)
     return api_key
 
@@ -47,22 +48,35 @@ def make_api_call(ip_address):
         error("Network error.")
         return exit(1)
     if response.get("success") == False:
+        # other errors including a bad API key
         print(response["error"]["info"])
         return exit(1)
     return response
 
 
-def get_lat_long(ip_address):
+def get_lat_long(ip_address, full):
     response = make_api_call(ip_address)
     if not response:
         return exit(1)
-    latitude = response.get("latitude")
-    longitude = response.get("longitude")
-    print(f"{latitude}, {longitude}")
+    else:
+        latitude = response.get("latitude")
+        longitude = response.get("longitude")
+        if full:
+            print(
+                f"IP address: {ip_address}"
+                f"\nlatitude: {str(latitude)}"
+                f"\nlongitude: {str(longitude)}"
+            )
+        else:
+            print(f"{latitude}, {longitude}")
+        return exit(0)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("ip_address")
+    parser.add_argument(
+        "-f", "--full", action="store_true", help="labelled input and output"
+    )
     args = parser.parse_args()
-    get_lat_long(args.ip_address)
+    get_lat_long(args.ip_address, args.full)
