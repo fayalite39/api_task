@@ -41,12 +41,21 @@ def make_api_call(ip_address):
         return exit(1)
     ipstack_request = "http://api.ipstack.com/" + ip_address \
         + "?access_key=" + api_key
-    response = requests.get(ipstack_request)
-    return response.json()
+    try:
+        response = requests.get(ipstack_request).json()
+    except:
+        error("Network error.")
+        return exit(1)
+    if response.get("success") == False:
+        print(response["error"]["info"])
+        return exit(1)
+    return response
 
 
 def get_lat_long(ip_address):
     response = make_api_call(ip_address)
+    if not response:
+        return exit(1)
     latitude = response.get("latitude")
     longitude = response.get("longitude")
     print(f"{latitude}, {longitude}")
